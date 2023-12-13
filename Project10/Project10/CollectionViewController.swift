@@ -35,11 +35,13 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
         }
         
         let person = people[indexPath.item]
+        
         cell.nameLabel.text = person.name
         
-        let path = Bundle.documentsDirectory.appending(path: person.image)
+//        let path = Bundle.documentsDirectory.appending(path: )
         
-        cell.imageView.image = UIImage(contentsOfFile: path.path)
+        let imagePath = getDocumentsDirectory().appendingPathComponent(person.image)
+        cell.imageView.image = UIImage(contentsOfFile: imagePath.path)
         
         cell.imageView.layer.borderColor = UIColor.lightGray.withAlphaComponent(0.6).cgColor
         cell.imageView.layer.borderWidth = 2
@@ -49,7 +51,10 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
         
         return cell
     }
-    
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
+    }
     
     override func collectionView(_ collectionView: UICollectionView, 
                                  didSelectItemAt indexPath: IndexPath) {
@@ -59,7 +64,7 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
             renameAlert(for: person)
         }
         else{
-            
+            renameDeleteAlert(for: person)
         }
         
     }
@@ -78,7 +83,7 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
         let alertController = UIAlertController(
             title: "Rename person",
             message: "Enter new name for image",
-            preferredStyle: .actionSheet)
+            preferredStyle: .alert)
         
         
         alertController.addTextField()
@@ -95,7 +100,8 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
             }
         )
         alertController.addAction(
-            UIAlertAction(title: "Cancel", style: .cancel))
+            UIAlertAction(title: "Cancel", style: .cancel)
+        )
         
         present(alertController, animated: true)
     }
@@ -106,7 +112,7 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
         let alertController = UIAlertController(
             title: "Selected \(person.name)",
             message: nil,
-            preferredStyle: .actionSheet
+            preferredStyle: .alert
         )
         
         alertController.addAction(
@@ -128,13 +134,15 @@ class CollectionViewController: UICollectionViewController, UIImagePickerControl
         alertController.addAction(
             UIAlertAction(title: "Cancel", style: .cancel)
         )
+        present(alertController, animated: true)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let image = info[.editedImage] as? UIImage else { return }
         
         let imageName = UUID().uuidString
-        let imagePath = Bundle.documentsDirectory.appending(path: imageName)
+        let imagePath = getDocumentsDirectory().appendingPathComponent(imageName)
+//        let imagePath = Bundle.documentsDirectory.appending(path: imageName)
         
         if let jpegData = image.jpegData(compressionQuality: 0.8){
             try? jpegData.write(to: imagePath)
